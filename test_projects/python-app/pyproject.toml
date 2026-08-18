@@ -1,0 +1,11 @@
+[project]
+name = "data-pipeline"
+description = "A Python data processing pipeline for ETL tasks"
+version = "1.0.0"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.100.0"
+sqlalchemy = "^2.0.0"
+numpy = "^1.24.0"
+pandas = "^2.0.0"
