@@ -308,6 +308,7 @@ def scan_workspace(
     root_path: str | Path,
     db: Session,
     progress_callback=None,
+    parse_callback=None,
 ) -> Workspace:
     """
     Main entry point: scan a folder, discover projects, index files,
@@ -432,5 +433,9 @@ def scan_workspace(
 
     workspace.last_scan = utcnow()
     db.commit()
+
+    # Run code intelligence parsing if callback provided
+    if parse_callback:
+        parse_callback(workspace)
 
     return workspace

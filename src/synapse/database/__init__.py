@@ -1,7 +1,7 @@
 from .models import Base, engine, SessionLocal
-from .models import Workspace, Project, File, Symbol, Technology, Relationship
+from .models import Workspace, Project, File, Symbol, Technology, Relationship, FileImport
 
 __all__ = [
     "Base", "engine", "SessionLocal",
-    "Workspace", "Project", "File", "Symbol", "Technology", "Relationship",
+    "Workspace", "Project", "File", "Symbol", "Technology", "Relationship", "FileImport",
 ]

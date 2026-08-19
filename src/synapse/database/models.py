@@ -65,6 +65,7 @@ class File(Base):
 
     project = relationship("Project", back_populates="files")
     symbols = relationship("Symbol", back_populates="file", cascade="all, delete-orphan")
+    imports = relationship("FileImport", back_populates="file", cascade="all, delete-orphan")
 
     __table_args__ = (
         UniqueConstraint("project_id", "path", name="uq_file_project_path"),
@@ -77,11 +78,17 @@ class Symbol(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     file_id = Column(Integer, ForeignKey("files.id"), nullable=False)
     name = Column(String, nullable=False)
-    symbol_type = Column(String, nullable=False)
+    symbol_type = Column(String, nullable=False)  # module, class, function, method, component, interface, enum
     start_line = Column(Integer, nullable=True)
     end_line = Column(Integer, nullable=True)
+    start_column = Column(Integer, nullable=True)
+    end_column = Column(Integer, nullable=True)
     source_excerpt = Column(Text, nullable=True)
+    signature = Column(Text, nullable=True)
     parent_symbol_id = Column(Integer, ForeignKey("symbols.id"), nullable=True)
+    metadata_ = Column("metadata", JSON, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     file = relationship("File", back_populates="symbols")
     parent = relationship("Symbol", remote_side="Symbol.id", backref="children", foreign_keys=[parent_symbol_id])
@@ -99,6 +106,25 @@ class Technology(Base):
 
     __table_args__ = (
         UniqueConstraint("project_id", "name", "category", name="uq_tech_project_name_cat"),
+    )
+
+
+class FileImport(Base):
+    __tablename__ = "file_imports"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    file_id = Column(Integer, ForeignKey("files.id"), nullable=False)
+    module_name = Column(String, nullable=False)
+    import_type = Column(String, nullable=False)  # standard, from, wildcard, dynamic
+    alias = Column(String, nullable=True)
+    line_number = Column(Integer, nullable=True)
+    is_relative = Column(Integer, default=0)  # 0 or 1 for SQLite boolean
+    metadata_ = Column("metadata", JSON, nullable=True)
+
+    file = relationship("File", back_populates="imports")
+
+    __table_args__ = (
+        Index("ix_import_file", "file_id"),
     )
 
 
