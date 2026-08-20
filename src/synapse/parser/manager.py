@@ -22,6 +22,8 @@ _LANGUAGE_PARSER_MAP = {
     "TypeScript": "typescript",
     "TSX": "tsx",
     "Dart": "dart",
+    "CSS": "css",
+    "Rust": "rust",
 }
 
 # Map file extensions to whether they need the TSX parser
@@ -60,6 +62,18 @@ class ParserManager:
             self._parsers["dart"] = DartParser()
         except ImportError as e:
             logger.warning(f"Dart parser not available: {e}")
+
+        try:
+            from .css_parser import CSSParser
+            self._parsers["css"] = CSSParser()
+        except ImportError as e:
+            logger.warning(f"CSS parser not available: {e}")
+
+        try:
+            from .rust_parser import RustParser
+            self._parsers["rust"] = RustParser()
+        except ImportError as e:
+            logger.warning(f"Rust parser not available: {e}")
 
     def get_parser_key(self, language: str) -> Optional[str]:
         """Get the parser key for a given language name."""
@@ -112,51 +126,29 @@ class ParserManager:
         db.query(FileImport).filter(FileImport.file_id == file_record.id).delete()
         db.flush()
 
-        # Insert new symbols — two-pass to resolve parent IDs
+        # Insert new symbols — single pass, parents inserted before children
         symbol_name_to_id: dict[str, int] = {}
-        symbols_to_insert = []
 
         for sym in parsed.symbols:
-            symbols_to_insert.append(sym)
-
-        # First pass: top-level symbols (no parent)
-        for sym in symbols_to_insert:
-            if sym.parent_name is None:
-                db_sym = Symbol(
-                    file_id=file_record.id,
-                    name=sym.name,
-                    symbol_type=sym.symbol_type.value,
-                    start_line=sym.start_line,
-                    end_line=sym.end_line,
-                    start_column=sym.start_column,
-                    end_column=sym.end_column,
-                    source_excerpt=None,
-                    signature=sym.signature,
-                    metadata_=sym.metadata if sym.metadata else None,
-                )
-                db.add(db_sym)
-                db.flush()
-                symbol_name_to_id[sym.name] = db_sym.id
-
-        # Second pass: child symbols
-        for sym in symbols_to_insert:
+            parent_id = None
             if sym.parent_name is not None:
                 parent_id = symbol_name_to_id.get(sym.parent_name)
-                db_sym = Symbol(
-                    file_id=file_record.id,
-                    name=sym.name,
-                    symbol_type=sym.symbol_type.value,
-                    start_line=sym.start_line,
-                    end_line=sym.end_line,
-                    start_column=sym.start_column,
-                    end_column=sym.end_column,
-                    source_excerpt=None,
-                    signature=sym.signature,
-                    parent_symbol_id=parent_id,
-                    metadata_=sym.metadata if sym.metadata else None,
-                )
-                db.add(db_sym)
-                db.flush()
+            db_sym = Symbol(
+                file_id=file_record.id,
+                name=sym.name,
+                symbol_type=sym.symbol_type.value,
+                start_line=sym.start_line,
+                end_line=sym.end_line,
+                start_column=sym.start_column,
+                end_column=sym.end_column,
+                source_excerpt=None,
+                signature=sym.signature,
+                parent_symbol_id=parent_id,
+                metadata_=sym.metadata if sym.metadata else None,
+            )
+            db.add(db_sym)
+            db.flush()
+            symbol_name_to_id[sym.name] = db_sym.id
 
         # Insert imports
         for imp in parsed.imports:

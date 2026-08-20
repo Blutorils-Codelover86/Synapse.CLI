@@ -16,7 +16,14 @@ class SymbolType(str, Enum):
     INTERFACE = "interface"
     ENUM = "enum"
     VARIABLE = "variable"
-
+    # CSS-specific symbol types
+    SELECTOR = "selector"
+    MEDIA_QUERY = "media_query"
+    KEYFRAMES = "keyframes"
+    PROPERTY = "property"
+    # Rust-specific symbol types
+    STRUCT = "struct"
+    TRAIT = "trait"
 
 @dataclass
 class ParsedSymbol:

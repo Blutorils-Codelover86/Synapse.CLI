@@ -277,6 +277,14 @@ def _print_symbol_tree(console, sym, children_map: dict, depth: int = 0):
         "component": "magenta",
         "interface": "blue",
         "enum": "red",
+        "selector": "bright_green",
+        "media_query": "bright_cyan",
+        "keyframes": "bright_magenta",
+        "property": "bright_yellow",
+        "struct": "bright_red",
+        "trait": "bright_blue",
+        "module": "bright_white",
+        "variable": "bright_black",
     }
     color = type_colors.get(sym.symbol_type, "white")
     type_label = f"[{color}]{sym.symbol_type}[/{color}]"

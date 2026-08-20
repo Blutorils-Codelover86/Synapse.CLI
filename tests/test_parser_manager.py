@@ -23,8 +23,11 @@ class TestParserManager:
     def test_can_parse_dart(self, manager):
         assert manager.can_parse("Dart") is True
 
-    def test_cannot_parse_rust(self, manager):
-        assert manager.can_parse("Rust") is False
+    def test_can_parse_rust(self, manager):
+        assert manager.can_parse("Rust") is True
+
+    def test_can_parse_css(self, manager):
+        assert manager.can_parse("CSS") is True
 
     def test_parse_python_source(self, manager):
         source = """
@@ -51,8 +54,8 @@ function hello() { return "world"; }
         assert len(result.symbols) == 1
 
     def test_parse_unsupported_language(self, manager):
-        source = "fn main() { println!(\"hello\"); }"
-        result = manager.parse_source(source, "Rust")
+        source = "package main\nfunc main() { fmt.Println(\"hello\") }"
+        result = manager.parse_source(source, "Go")
         assert len(result.errors) > 0
 
     def test_tsx_detection(self, manager):
